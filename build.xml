@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="MarsRovers" default="jar" basedir=".">
+	<property name="run.src" value="src"></property>
+	<property name="run.build" value="build/classes"></property>
+	<property name="test.src" value="test"></property>
+	<property name="build.dir" value="build"></property>
+	<property name="test.build" value="${build.dir}/test"></property>
+	<property name="test.xml" value="${build.dir}/xml"></property>
+	<property name="test.report" value="${build.dir}/report"></property>
+	<property name="lib.dir" value="lib"></property>
+	<path id="test.path">
+		<pathelement location="${lib.dir}/junit.jar"/>
+		<pathelement location="${lib.dir}/hamcrest.jar"/>
+	</path>
+	<target name="clean">
+		<delete dir="${build.dir}"/>
+	</target>
+	<target name="compile" depends="clean">
+		<mkdir dir="${run.build}"/>
+		<javac srcdir="${run.src}" destdir="${run.build}" includeantruntime="false"/>
+		<mkdir dir="${test.build}"/>
+		<javac srcdir="${test.src}" destdir="${test.build}" classpathref="test.path" classpath="${run.build}" includeantruntime="false"/>
+	</target>
+	<target name="junit" depends="compile">
+		<mkdir dir="${test.xml}"/>
+		<junit printsummary="true">
+			<classpath path="${run.build}"></classpath>
+			<classpath path="${test.build}"></classpath>
+			<classpath refid="test.path"></classpath>
+			<formatter type="xml"/>
+			<batchtest todir="${test.xml}">
+				<fileset dir="${test.build}">
+				    <include name="**/Test*.class"/>
+					<exclude name="**/Test*$*.class"/>
+				</fileset>
+			</batchtest>
+		</junit>
+		<mkdir dir="${test.report}"/>
+		<junitreport todir="${test.xml}">
+			<fileset dir="${test.xml}">
+				<include name="TEST-*.xml"/>
+			</fileset>
+			<report format="frames" todir="${test.report}"/>
+		</junitreport>
+		<fail if="junit.failure" message="Unit tests failed, see the report!"/>
+	</target>
+	<target name="jar" depends="junit">
+		<jar destfile="../MarsRovers.jar" basedir="${run.build}">
+			<manifest>
+				<attribute name="Main-class" value="com.heatoncai.Main"/>
+			</manifest>
+		</jar>
+	</target>
+</project>
